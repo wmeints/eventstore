@@ -35,8 +35,8 @@ public class EventStoreTests
         
         var eventStore = scope.ServiceProvider.GetRequiredService<IEventStore>();
 
-        await eventStore.AppendAsync(Guid.NewGuid(), 0L, new[] { new MyOtherEvent() });
-        await dbContext.SaveChangesAsync();
+        eventStore.AppendStream(Guid.NewGuid(), 0L, new[] { new MyOtherEvent() });
+        await eventStore.SaveChangesAsync();
         
         var events = await dbContext.Events.ToListAsync();
         
@@ -52,11 +52,11 @@ public class EventStoreTests
         var eventStore = scope.ServiceProvider.GetRequiredService<IEventStore>();
 
         var aggregateId = Guid.NewGuid();
-        await eventStore.CreateStreamAsync(aggregateId, new[] { new MyOtherEvent() });
-        await dbContext.SaveChangesAsync();
+        eventStore.CreateStream(aggregateId, new[] { new MyOtherEvent() });
+        await eventStore.SaveChangesAsync();
         
-        await eventStore.AppendAsync(aggregateId, 1L, new[] { new MyOtherEvent() });
-        await dbContext.SaveChangesAsync();
+        eventStore.AppendStream(aggregateId, 1L, new[] { new MyOtherEvent() });
+        await eventStore.SaveChangesAsync();
         
         var events = await dbContext.Events.ToListAsync();
         
@@ -72,12 +72,14 @@ public class EventStoreTests
         var eventStore = scope.ServiceProvider.GetRequiredService<IEventStore>();
         
         var aggregateId = Guid.NewGuid();
-        await eventStore.CreateStreamAsync(aggregateId, new[] { new MyOtherEvent(), new MyOtherEvent() });
+        
+        eventStore.CreateStream(aggregateId, new[] { new MyOtherEvent(), new MyOtherEvent() });
         await dbContext.SaveChangesAsync();
 
-        await Assert.ThrowsAsync<DBConcurrencyException>(async () =>
+        await Assert.ThrowsAsync<ConcurrencyException>(async () =>
         {
-            await eventStore.AppendAsync(aggregateId, 1L, new[] { new MyOtherEvent() });
+            eventStore.AppendStream(aggregateId, 1L, new[] { new MyOtherEvent() });
+            await eventStore.SaveChangesAsync();
         });
     }
     
@@ -89,8 +91,8 @@ public class EventStoreTests
         
         var eventStore = scope.ServiceProvider.GetRequiredService<IEventStore>();
         
-        await eventStore.CreateStreamAsync(Guid.NewGuid(), new[] { new MyOtherEvent() });
-        await dbContext.SaveChangesAsync();
+        eventStore.CreateStream(Guid.NewGuid(), new[] { new MyOtherEvent() });
+        await eventStore.SaveChangesAsync();
         
         var events = await dbContext.Events.ToListAsync();
 
@@ -107,13 +109,13 @@ public class EventStoreTests
 
         var aggregateId = Guid.NewGuid();
         
-        await eventStore.CreateStreamAsync(aggregateId, new[] { new MyOtherEvent() });
-        await dbContext.SaveChangesAsync();
+        eventStore.CreateStream(aggregateId, new[] { new MyOtherEvent() });
+        await eventStore.SaveChangesAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        await Assert.ThrowsAsync<ConcurrencyException>(async () =>
         {
-            await eventStore.CreateStreamAsync(aggregateId, new[] { new MyOtherEvent() });
-            await dbContext.SaveChangesAsync();
+            eventStore.CreateStream(aggregateId, new[] { new MyOtherEvent() });
+            await eventStore.SaveChangesAsync();
         });
         
         var events = await dbContext.Events.ToListAsync();

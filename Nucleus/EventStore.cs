@@ -7,6 +7,7 @@ namespace Nucleus;
 
 public class EventStore<TContext> : IEventStore where TContext : DbContext
 {
+    private List<EventStoreOperation<TContext>> Operations { get; } = new();
     private TContext Context { get; set; }
     private DbSet<EventRecord> Events => Context.Set<EventRecord>();
 
@@ -17,6 +18,8 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
 
     public async Task<TAggregate?> GetAsync<TAggregate, TIdentity>(TIdentity id) where TAggregate : class
     {
+        ArgumentNullException.ThrowIfNull(id);
+        
         var eventRecords = await Events
             .Where(x => x.AggregateId == id.ToString()!)
             .OrderBy(x => x.Sequence)
@@ -29,73 +32,39 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
 
         var events = (IEnumerable<object>)eventRecords.Select(x => x.Deserialize()).ToList();
         var currentVersion = eventRecords.Max(x => x.Sequence);
+        
+        AggregateVersionCache.Put(id.ToString()!, currentVersion);
 
         return (TAggregate)Activator.CreateInstance(typeof(TAggregate), false, id, currentVersion, events)!;
     }
 
-    public async Task CreateStreamAsync<TIdentity>(TIdentity id, IEnumerable<object> events)
+    public void CreateStream<TIdentity>(TIdentity id, IEnumerable<object> events)
     {
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(events);
 
-        var version = 0L;
-
-        var existingRecords = await Events.AnyAsync(x => x.AggregateId == id.ToString());
-
-        if (existingRecords)
-        {
-            throw new InvalidOperationException(
-                "There's already a stream for this aggregate. Please use AppendAsync instead.");
-        }
-
-        await AppendEventsInternal(id, version, events);
+        Operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, 0L, events));
     }
 
-    public async Task AppendAsync<TIdentity>(TIdentity id, long expectedVersion, IEnumerable<object> events)
+    public void AppendStream<TIdentity>(TIdentity id, long expectedVersion, IEnumerable<object> events)
     {
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(events);
 
-        var eventCount = await Events.Where(x => x.AggregateId == id.ToString()).CountAsync();
-        var currentVersion = 0L;
-
-        if (eventCount > 0)
-        {
-            currentVersion = await Events
-                .Where(x => x.AggregateId == id.ToString())
-                .MaxAsync(x => x.Sequence);
-        }
-
-        if (currentVersion != expectedVersion)
-        {
-            throw new DBConcurrencyException("Event stream has been modified. Reload the stream and try again.");
-        }
-
-        await AppendEventsInternal(id, expectedVersion, events);
+        Operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, expectedVersion, events));
     }
 
     public async Task<int> SaveChangesAsync()
     {
-        return await Context.SaveChangesAsync();
-    }
-
-    private async Task AppendEventsInternal<TIdentity>(
-        [DisallowNull] TIdentity id, long version, IEnumerable<object> events)
-    {
-        var eventRecords = new List<EventRecord>();
-
-        foreach (var evt in events)
+        foreach(var operation in Operations)
         {
-            var serializedData = JsonSerializer.Serialize(evt);
-
-            eventRecords.Add(new EventRecord(
-                0L,
-                id.ToString()!,
-                ++version,
-                EventRegistry.GetSchemaName(evt.GetType()),
-                serializedData));
+            await operation.ExecuteAsync(Context);
         }
 
-        await Events.AddRangeAsync(eventRecords);
+        var affectedRows = await Context.SaveChangesAsync();
+        
+        Operations.Clear();
+
+        return affectedRows;
     }
 }

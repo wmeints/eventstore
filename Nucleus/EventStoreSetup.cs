@@ -1,8 +1,8 @@
 ﻿namespace Nucleus;
 
-public class SetupEventStore
+public class EventStoreSetup
 {
-    public static SetupEventStore Instance { get; } = new();
+    public static EventStoreSetup Instance { get; } = new();
     
     public void RegisterEvent<T>(string? schemaName = null)
     {
