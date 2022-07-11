@@ -5,11 +5,16 @@ namespace Nucleus;
 
 public static class NucleusExtensions
 {
-    public static void AddEventStore<TContext>(this IServiceCollection services, Action<EventStoreSetup>? configure = null) where TContext : DbContext
+    public static void AddEventStore<TContext>(this IServiceCollection services, Action<EventStoreSetup<TContext>>? configure = null) where TContext : DbContext
     {
-        configure?.Invoke(EventStoreSetup.Instance);
+        var setup = new EventStoreSetup<TContext>(services);
+        
+        configure?.Invoke(setup);
 
-        var serviceType = typeof(EventStore<>).MakeGenericType(typeof(TContext));
-        services.AddScoped(typeof(IEventStore), serviceType);
+        var eventStoreServiceType = typeof(EventStore<>).MakeGenericType(typeof(TContext));
+        var projectionEngineServiceType = typeof(ProjectionEngine<>).MakeGenericType(typeof(TContext));
+        
+        services.AddScoped(typeof(IEventStore), eventStoreServiceType);
+        services.AddScoped(projectionEngineServiceType);
     }
 }

@@ -9,6 +9,8 @@ internal class AppendEventsOperation<TContext> : EventStoreOperation<TContext> w
     private readonly long _expectedVersion;
     private readonly IEnumerable<object> _records;
 
+    public override IEnumerable<object> Events => _records;
+
     public AppendEventsOperation(string aggregateId, long expectedVersion, IEnumerable<object> records)
     {
         _aggregateId = aggregateId;

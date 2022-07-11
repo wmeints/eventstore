@@ -1,9 +1,17 @@
-﻿namespace Nucleus;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
-public class EventStoreSetup
+namespace Nucleus;
+
+public class EventStoreSetup<TContext> where TContext : DbContext
 {
-    public static EventStoreSetup Instance { get; } = new();
-    
+    private readonly IServiceCollection _services;
+
+    public EventStoreSetup(IServiceCollection services)
+    {
+        _services = services;
+    }
+
     public void RegisterEvent<T>(string? schemaName = null)
     {
         if (string.IsNullOrEmpty(schemaName))
@@ -15,4 +23,10 @@ public class EventStoreSetup
             EventRegistry.Register(typeof(T), schemaName);
         }
     }
+
+    public void RegisterProjection<T>() where T : class, IProjection<TContext>
+    {
+        _services.AddScoped<IProjection<TContext>, T>();
+    }
+
 }
