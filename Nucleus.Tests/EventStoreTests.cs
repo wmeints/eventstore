@@ -34,7 +34,7 @@ public class EventStoreTests
         
         var eventStore = scope.ServiceProvider.GetRequiredService<IEventStore>();
 
-        eventStore.AppendStream(Guid.NewGuid(), 0L, new[] { new MyOtherEvent() });
+        eventStore.AppendToStream(Guid.NewGuid(), 0L, new[] { new MyOtherEvent() });
         await eventStore.SaveChangesAsync();
         
         var events = await dbContext.Events.ToListAsync();
@@ -54,7 +54,7 @@ public class EventStoreTests
         eventStore.CreateStream(aggregateId, new[] { new MyOtherEvent() });
         await eventStore.SaveChangesAsync();
         
-        eventStore.AppendStream(aggregateId, 1L, new[] { new MyOtherEvent() });
+        eventStore.AppendToStream(aggregateId, 1L, new[] { new MyOtherEvent() });
         await eventStore.SaveChangesAsync();
         
         var events = await dbContext.Events.ToListAsync();
@@ -77,7 +77,7 @@ public class EventStoreTests
 
         await Assert.ThrowsAsync<ConcurrencyException>(async () =>
         {
-            eventStore.AppendStream(aggregateId, 1L, new[] { new MyOtherEvent() });
+            eventStore.AppendToStream(aggregateId, 1L, new[] { new MyOtherEvent() });
             await eventStore.SaveChangesAsync();
         });
     }

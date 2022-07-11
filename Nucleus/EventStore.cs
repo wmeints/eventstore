@@ -50,7 +50,7 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
         _operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, 0L, events));
     }
 
-    public void AppendStream<TIdentity>(TIdentity id, long expectedVersion, IEnumerable<object> events)
+    public void AppendToStream<TIdentity>(TIdentity id, long expectedVersion, IEnumerable<object> events)
     {
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(events);
