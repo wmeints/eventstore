@@ -1,4 +1,4 @@
-﻿namespace Nucleus;
+﻿namespace Nucleus.Projections;
 
 public interface IProjection<TContext>
 {

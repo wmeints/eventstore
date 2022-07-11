@@ -1,43 +1,43 @@
 ﻿namespace Nucleus;
 
-public static class EventRegistry
+public class EventRegistry
 {
-    private static readonly Dictionary<string, Type> SchemaToType = new();
-    private static readonly Dictionary<Type, string> TypeToSchema = new();
+    private readonly Dictionary<string, Type> _schemaToType = new();
+    private readonly Dictionary<Type, string> _typeToSchema = new();
 
-    public static void Register(Type type)
+    public void Register(Type type)
     {
         var schemaName = type.FullName!;
         Register(type, schemaName);
     }
 
-    public static void Register(Type type, string schemaName)
+    public void Register(Type type, string schemaName)
     { 
         ArgumentNullException.ThrowIfNull(schemaName);
         ArgumentNullException.ThrowIfNull(type);
 
-        if (TypeToSchema.ContainsKey(type))
+        if (_typeToSchema.ContainsKey(type))
         {
             throw new ArgumentException($"Type {type.FullName} is already registered");
         }
         
-        SchemaToType.Add(schemaName, type);
-        TypeToSchema.Add(type, schemaName);
+        _schemaToType.Add(schemaName, type);
+        _typeToSchema.Add(type, schemaName);
     }
 
-    public static bool IsRegistered(Type type)
+    public bool IsRegistered(Type type)
     {
-        return TypeToSchema.ContainsKey(type);
+        return _typeToSchema.ContainsKey(type);
     }
 
-    public static bool IsRegistered(string schemaName)
+    public bool IsRegistered(string schemaName)
     {
-        return SchemaToType.ContainsKey(schemaName);
+        return _schemaToType.ContainsKey(schemaName);
     }
 
-    public static string GetSchemaName(Type type)
+    public string GetSchemaName(Type type)
     {
-        if(!TypeToSchema.TryGetValue(type, out var schemaName))
+        if(!_typeToSchema.TryGetValue(type, out var schemaName))
         {
             throw new ArgumentException($"Type {type.FullName} is not registered");
         }
@@ -45,9 +45,9 @@ public static class EventRegistry
         return schemaName;
     }
 
-    public static Type GetType(string schemaName)
+    public Type GetType(string schemaName)
     {
-        if(!SchemaToType.TryGetValue(schemaName, out var type))
+        if(!_schemaToType.TryGetValue(schemaName, out var type))
         {
             throw new ArgumentException($"Schema {schemaName} is not registered");
         }

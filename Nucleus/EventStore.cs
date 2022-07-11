@@ -1,27 +1,30 @@
 ﻿using System.Transactions;
 using Microsoft.EntityFrameworkCore;
+using Nucleus.Projections;
+using Nucleus.StoreOperations;
 
 namespace Nucleus;
 
 public class EventStore<TContext> : IEventStore where TContext : DbContext
 {
-    private List<EventStoreOperation<TContext>> Operations { get; } = new();
-    private TContext Context { get; }
-    private DbSet<EventRecord> Events => Context.Set<EventRecord>();
+    private readonly List<EventStoreOperation<TContext>> _operations = new();
+    private readonly TContext _dbContext;
+    private readonly EventRegistry _eventRegistry;
+    private readonly ProjectionEngine<TContext> _projectionEngine;
 
-    private ProjectionEngine<TContext> Projections { get; }
-
-    public EventStore(TContext context, ProjectionEngine<TContext> projectionEngine)
+    public EventStore(TContext dbContext, ProjectionEngine<TContext> projectionEngineEngine,
+        EventRegistry eventRegistry)
     {
-        Context = context;
-        Projections = projectionEngine;
+        _dbContext = dbContext;
+        _eventRegistry = eventRegistry;
+        _projectionEngine = projectionEngineEngine;
     }
 
     public async Task<TAggregate?> GetAsync<TAggregate, TIdentity>(TIdentity id) where TAggregate : class
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        var eventRecords = await Events
+        var eventRecords = await _dbContext.Set<EventRecord>()
             .Where(x => x.AggregateId == id.ToString()!)
             .OrderBy(x => x.Sequence)
             .ToListAsync();
@@ -31,7 +34,7 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
             return default(TAggregate);
         }
 
-        var events = (IEnumerable<object>)eventRecords.Select(x => x.Deserialize()).ToList();
+        var events = (IEnumerable<object>)eventRecords.Select(x => x.Deserialize(_eventRegistry)).ToList();
         var currentVersion = eventRecords.Max(x => x.Sequence);
 
         AggregateVersionCache.Put(id.ToString()!, currentVersion);
@@ -44,7 +47,7 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(events);
 
-        Operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, 0L, events));
+        _operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, 0L, events));
     }
 
     public void AppendStream<TIdentity>(TIdentity id, long expectedVersion, IEnumerable<object> events)
@@ -52,7 +55,7 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(events);
 
-        Operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, expectedVersion, events));
+        _operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, expectedVersion, events));
     }
 
     public async Task<int> SaveChangesAsync()
@@ -60,24 +63,22 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
         using var transactionScope = new TransactionScope();
 
         var trackedEvents = new List<object>();
+        var operationContext = new EventStoreOperationContext<TContext>(_eventRegistry, _dbContext);
 
         // Always execute the event store operations first before running the projections.
         // If the projectors want to use events, they can grab them from the DbContext.
-        foreach (var operation in Operations)
+        foreach (var operation in _operations)
         {
-            await operation.ExecuteAsync(Context);
+            await operation.ExecuteAsync(operationContext);
             trackedEvents.AddRange(operation.Events);
         }
 
-        foreach (var evt in trackedEvents)
-        {
-            await Projections.RunAsync(trackedEvents);
-        }
+        await _projectionEngine.RunAsync(trackedEvents);
 
-        var affectedRows = await Context.SaveChangesAsync();
-        
+        var affectedRows = await _dbContext.SaveChangesAsync();
+
         transactionScope.Complete();
-        Operations.Clear();
+        _operations.Clear();
 
         return affectedRows;
     }

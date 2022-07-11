@@ -11,11 +11,6 @@ public class EventStoreTests
 
     public EventStoreTests()
     {
-        if (!EventRegistry.IsRegistered(typeof(MyOtherEvent)))
-        {
-            EventRegistry.Register(typeof(MyOtherEvent));
-        }
-        
         var services = new ServiceCollection();
 
         services.AddDbContext<MyDbContext>(options =>
@@ -23,7 +18,10 @@ public class EventStoreTests
             options.UseInMemoryDatabase($"Test-{Guid.NewGuid()}");
         });
         
-        services.AddEventStore<MyDbContext>();
+        services.AddEventStore<MyDbContext>(options =>
+        {
+            options.RegisterEvent<MyOtherEvent>();
+        });
         
         _serviceProvider = services.BuildServiceProvider();
     }

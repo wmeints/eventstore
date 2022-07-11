@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Nucleus.Projections;
 using Nucleus.Tests.Support;
 
 namespace Nucleus.Tests;
@@ -10,15 +11,14 @@ public class ProjectionTests
 
     public ProjectionTests()
     {
-        if (!EventRegistry.IsRegistered(typeof(MyOtherEvent)))
-        {
-            EventRegistry.Register(typeof(MyOtherEvent));
-        }
-
         var services = new ServiceCollection();
 
         services.AddDbContext<MyDbContext>(options => { options.UseInMemoryDatabase($"Test-{Guid.NewGuid()}"); });
-        services.AddEventStore<MyDbContext>(config => { config.RegisterProjection<MyProjection>(); });
+        services.AddEventStore<MyDbContext>(config =>
+        {
+            config.RegisterEvent<MyOtherEvent>();
+            config.RegisterProjection<MyProjection>();
+        });
 
         _serviceProvider = services.BuildServiceProvider();
     }

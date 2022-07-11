@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Nucleus;
+namespace Nucleus.Projections;
 
 public class ProjectionContext<TContext>: IProjectionContext<TContext> where TContext : DbContext
 {

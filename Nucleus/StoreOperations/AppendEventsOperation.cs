@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 
-namespace Nucleus;
+namespace Nucleus.StoreOperations;
 
 internal class AppendEventsOperation<TContext> : EventStoreOperation<TContext> where TContext : DbContext
 {
@@ -18,15 +18,13 @@ internal class AppendEventsOperation<TContext> : EventStoreOperation<TContext> w
         _records = records;
     }
 
-    public override async Task ExecuteAsync(TContext context)
+    public override async Task ExecuteAsync(EventStoreOperationContext<TContext> context)
     {
-        var events = context.Set<EventRecord>();
-
         var currentVersion = AggregateVersionCache.Get(_aggregateId);
 
-        if (await events.AnyAsync(e => e.AggregateId == _aggregateId))
+        if (await context.Events.AnyAsync(e => e.AggregateId == _aggregateId))
         {
-            currentVersion = events
+            currentVersion = context.Events
                 .Where(x => x.AggregateId == _aggregateId)
                 .Max(x => x.Sequence);
         }
@@ -43,10 +41,10 @@ internal class AppendEventsOperation<TContext> : EventStoreOperation<TContext> w
             var serializedEventData = JsonSerializer.Serialize(evt);
             
             eventRecords.Add(new EventRecord(0L, _aggregateId, ++currentVersion,
-                EventRegistry.GetSchemaName(evt.GetType()), serializedEventData));
+                context.EventRegistry.GetSchemaName(evt.GetType()), serializedEventData));
         }
 
-        await events.AddRangeAsync(eventRecords);
+        await context.Events.AddRangeAsync(eventRecords);
 
         AggregateVersionCache.Put(_aggregateId, currentVersion);
     }

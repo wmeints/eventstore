@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Nucleus.Projections;
 
 namespace Nucleus;
 
 public class EventStoreSetup<TContext> where TContext : DbContext
 {
+    private readonly EventRegistry _eventRegistry = new();
     private readonly IServiceCollection _services;
 
     public EventStoreSetup(IServiceCollection services)
@@ -16,11 +18,11 @@ public class EventStoreSetup<TContext> where TContext : DbContext
     {
         if (string.IsNullOrEmpty(schemaName))
         {
-            EventRegistry.Register(typeof(T));    
+            _eventRegistry.Register(typeof(T));    
         }
         else
         {
-            EventRegistry.Register(typeof(T), schemaName);
+            _eventRegistry.Register(typeof(T), schemaName);
         }
     }
 
@@ -29,4 +31,5 @@ public class EventStoreSetup<TContext> where TContext : DbContext
         _services.AddScoped<IProjection<TContext>, T>();
     }
 
+    public EventRegistry EventRegistry => _eventRegistry;
 }

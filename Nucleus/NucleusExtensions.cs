@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Nucleus.Projections;
 
 namespace Nucleus;
 
@@ -13,6 +14,8 @@ public static class NucleusExtensions
 
         var eventStoreServiceType = typeof(EventStore<>).MakeGenericType(typeof(TContext));
         var projectionEngineServiceType = typeof(ProjectionEngine<>).MakeGenericType(typeof(TContext));
+        
+        services.AddSingleton(setup.EventRegistry);
         
         services.AddScoped(typeof(IEventStore), eventStoreServiceType);
         services.AddScoped(projectionEngineServiceType);

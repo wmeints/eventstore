@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Nucleus;
+namespace Nucleus.Projections;
 
 public class ProjectionEngine<TContext> where TContext : DbContext
 {
