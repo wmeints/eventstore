@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Nucleus.Tests;
+namespace Nucleus.Tests.Support;
 
 public class MyDbContext : EventStoreDbContext
 {

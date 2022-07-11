@@ -1,4 +1,4 @@
-﻿namespace Nucleus.Tests;
+﻿namespace Nucleus.Tests.Support;
 
 public class MyProjection: IProjection<MyDbContext>
 {
