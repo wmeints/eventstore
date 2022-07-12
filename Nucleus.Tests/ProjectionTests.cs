@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Nucleus.Projections;
 using Nucleus.Tests.Support;
 
 namespace Nucleus.Tests;

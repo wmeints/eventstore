@@ -1,4 +1,4 @@
-﻿namespace Nucleus.Projections;
+﻿namespace Nucleus;
 
 public interface IProjection
 {

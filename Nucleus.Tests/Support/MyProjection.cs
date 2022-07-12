@@ -1,6 +1,4 @@
-﻿using Nucleus.Projections;
-
-namespace Nucleus.Tests.Support;
+﻿namespace Nucleus.Tests.Support;
 
 public class MyProjection: IProjection
 {

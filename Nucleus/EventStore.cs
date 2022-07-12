@@ -1,6 +1,5 @@
 ﻿using System.Transactions;
 using Microsoft.EntityFrameworkCore;
-using Nucleus.Projections;
 using Nucleus.StoreOperations;
 
 namespace Nucleus;
