@@ -4,14 +4,16 @@ namespace Nucleus.StoreOperations;
 
 public class EventStoreOperationContext<TContext> where TContext : DbContext
 {
-    public EventStoreOperationContext(EventRegistry eventRegistry, TContext dbContext)
+    public EventStoreOperationContext(EventStoreSchemaRegistry eventStoreSchemaRegistry, TContext dbContext)
     {
-        EventRegistry = eventRegistry;
+        EventStoreSchemaRegistry = eventStoreSchemaRegistry;
         DbContext = dbContext;
     }
 
-    public EventRegistry EventRegistry { get; }
+    public EventStoreSchemaRegistry EventStoreSchemaRegistry { get; }
     public TContext DbContext { get; }
 
     public DbSet<EventRecord> Events => DbContext.Set<EventRecord>();
+
+    public DbSet<SnapshotRecord> Snapshots => DbContext.Set<SnapshotRecord>();
 }

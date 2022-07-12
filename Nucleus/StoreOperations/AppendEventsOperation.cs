@@ -41,7 +41,7 @@ internal class AppendEventsOperation<TContext> : EventStoreOperation<TContext> w
             var serializedEventData = JsonSerializer.Serialize(evt);
             
             eventRecords.Add(new EventRecord(0L, _aggregateId, ++currentVersion,
-                context.EventRegistry.GetSchemaName(evt.GetType()), serializedEventData));
+                context.EventStoreSchemaRegistry.GetSchemaName(evt.GetType()), serializedEventData));
         }
 
         await context.Events.AddRangeAsync(eventRecords);

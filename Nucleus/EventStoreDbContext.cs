@@ -2,7 +2,7 @@
 
 namespace Nucleus;
 
-public abstract class EventStoreDbContext: DbContext, IEventStoreDbContext
+public abstract class EventStoreDbContext : DbContext, IEventStoreDbContext
 {
     protected EventStoreDbContext()
     {
@@ -14,8 +14,11 @@ public abstract class EventStoreDbContext: DbContext, IEventStoreDbContext
 
     public DbSet<EventRecord> Events => Set<EventRecord>();
 
+    public DbSet<SnapshotRecord> Snapshots => Set<SnapshotRecord>();
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new EventRecordEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new SnapshotRecordEntityTypeConfiguration());
     }
 }

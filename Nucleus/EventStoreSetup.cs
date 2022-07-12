@@ -6,7 +6,7 @@ namespace Nucleus;
 
 public class EventStoreSetup<TContext> where TContext : DbContext
 {
-    private readonly EventRegistry _eventRegistry = new();
+    private readonly EventStoreSchemaRegistry _eventStoreSchemaRegistry = new();
     private readonly IServiceCollection _services;
 
     public EventStoreSetup(IServiceCollection services)
@@ -18,11 +18,23 @@ public class EventStoreSetup<TContext> where TContext : DbContext
     {
         if (string.IsNullOrEmpty(schemaName))
         {
-            _eventRegistry.Register(typeof(T));    
+            _eventStoreSchemaRegistry.Register(typeof(T));    
         }
         else
         {
-            _eventRegistry.Register(typeof(T), schemaName);
+            _eventStoreSchemaRegistry.Register(typeof(T), schemaName);
+        }
+    }
+
+    public void RegisterSnapshot<T>(string? schemaName = null)
+    {
+        if (string.IsNullOrEmpty(schemaName))
+        {
+            _eventStoreSchemaRegistry.Register(typeof(T));    
+        }
+        else
+        {
+            _eventStoreSchemaRegistry.Register(typeof(T), schemaName);
         }
     }
 
@@ -31,5 +43,5 @@ public class EventStoreSetup<TContext> where TContext : DbContext
         _services.AddScoped<IProjection<TContext>, T>();
     }
 
-    public EventRegistry EventRegistry => _eventRegistry;
+    public EventStoreSchemaRegistry EventStoreSchemaRegistry => _eventStoreSchemaRegistry;
 }

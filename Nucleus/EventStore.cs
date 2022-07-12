@@ -9,14 +9,14 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
 {
     private readonly List<EventStoreOperation<TContext>> _operations = new();
     private readonly TContext _dbContext;
-    private readonly EventRegistry _eventRegistry;
+    private readonly EventStoreSchemaRegistry _eventStoreSchemaRegistry;
     private readonly ProjectionEngine<TContext> _projectionEngine;
 
     public EventStore(TContext dbContext, ProjectionEngine<TContext> projectionEngineEngine,
-        EventRegistry eventRegistry)
+        EventStoreSchemaRegistry eventStoreSchemaRegistry)
     {
         _dbContext = dbContext;
-        _eventRegistry = eventRegistry;
+        _eventStoreSchemaRegistry = eventStoreSchemaRegistry;
         _projectionEngine = projectionEngineEngine;
     }
 
@@ -24,8 +24,21 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(id);
 
+        var startFromVersion = -1L;
+
+        var snapshotRecord = await _dbContext.Set<SnapshotRecord>()
+            .Where(x => x.AggregateId == id.ToString())
+            .OrderByDescending(x => x.Sequence)
+            .FirstOrDefaultAsync();
+
+        if (snapshotRecord != null)
+        {
+            startFromVersion = snapshotRecord.Sequence;
+        }
+
         var eventRecords = await _dbContext.Set<EventRecord>()
             .Where(x => x.AggregateId == id.ToString()!)
+            .Where(x => x.Sequence > startFromVersion)
             .OrderBy(x => x.Sequence)
             .ToListAsync();
 
@@ -34,12 +47,17 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
             return default;
         }
 
-        var events = (IEnumerable<object>)eventRecords.Select(x => x.Deserialize(_eventRegistry)).ToList();
+        var events = (IEnumerable<object>) eventRecords.Select(x => x.Deserialize(_eventStoreSchemaRegistry)).ToList();
         var currentVersion = eventRecords.Max(x => x.Sequence);
 
         AggregateVersionCache.Put(id.ToString()!, currentVersion);
 
-        return (TAggregate)Activator.CreateInstance(typeof(TAggregate), false, id, currentVersion, events)!;
+        return snapshotRecord switch
+        {
+            { } => AggregateFactory.Create<TAggregate, TIdentity>(id, currentVersion,
+                snapshotRecord.Deserialize(_eventStoreSchemaRegistry), events),
+            _ => AggregateFactory.Create<TAggregate, TIdentity>(id, currentVersion, events)
+        };
     }
 
     public void CreateStream<TIdentity>(TIdentity id, IEnumerable<object> events)
@@ -58,12 +76,20 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
         _operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, expectedVersion, events));
     }
 
+    public void SaveSnapshot<TIdentity, TSnapshot>(TIdentity id, long version, TSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        _operations.Add(new SaveSnapshotStoreOperation<TContext>(id.ToString()!, version, snapshot));
+    }
+
     public async Task<int> SaveChangesAsync()
     {
         using var transactionScope = new TransactionScope();
 
         var trackedEvents = new List<object>();
-        var operationContext = new EventStoreOperationContext<TContext>(_eventRegistry, _dbContext);
+        var operationContext = new EventStoreOperationContext<TContext>(_eventStoreSchemaRegistry, _dbContext);
 
         // Always execute the event store operations first before running the projections.
         // If the projectors want to use events, they can grab them from the DbContext.

@@ -1,6 +1,6 @@
 ﻿namespace Nucleus;
 
-public class EventRegistry
+public class EventStoreSchemaRegistry
 {
     private readonly Dictionary<string, Type> _schemaToType = new();
     private readonly Dictionary<Type, string> _typeToSchema = new();
