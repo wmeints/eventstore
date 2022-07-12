@@ -138,4 +138,43 @@ public class EventStoreTests
 
         Assert.Single(snapshots);
     }
+
+    [Fact]
+    public async Task CanRestoreStateFromEventStream()
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+        var eventStore = scope.ServiceProvider.GetRequiredService<IEventStore>();
+        var aggregateId = Guid.NewGuid();
+
+        eventStore.CreateStream(aggregateId, new[] { new MyOtherEvent() });
+        await eventStore.SaveChangesAsync();
+
+        var result = await eventStore.GetAsync<MyAggregate, Guid>(aggregateId);
+        
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task CanRestoreFromSnapshot()
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+        var eventStore = scope.ServiceProvider.GetRequiredService<IEventStore>();
+        var aggregateId = Guid.NewGuid();
+
+        eventStore.CreateStream(aggregateId, new[] { new MyOtherEvent() });
+        eventStore.SaveSnapshot(aggregateId, 1L, new MySnapshot() { Message = "Test"});
+        eventStore.AppendToStream(aggregateId, 1L, new[] { new MyOtherEvent() });
+        
+        await eventStore.SaveChangesAsync();
+
+        var result = await eventStore.GetAsync<MyAggregate, Guid>(aggregateId);
+        
+        Assert.NotNull(result);
+        Assert.Equal("Test", result.Message);
+        Assert.Single(result.Events);
+    }
 }

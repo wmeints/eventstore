@@ -14,11 +14,15 @@ public class MyAggregate
         Events = events.ToList();
     }
 
-    protected MyAggregate(Guid id, long version, MySnapshot snapshot, IEnumerable<object> events)
+    protected MyAggregate(Guid id, long version, object snapshot, IEnumerable<object> events)
     {
         Id = id;
         Version = version;
-        Message = snapshot.Message;
         Events = events.ToList();
+
+        if (snapshot is MySnapshot mySnapshotInstance)
+        {
+            Message = mySnapshotInstance.Message;
+        }
     }
 }
