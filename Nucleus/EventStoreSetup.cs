@@ -38,9 +38,9 @@ public class EventStoreSetup<TContext> where TContext : DbContext
         }
     }
 
-    public void RegisterProjection<T>() where T : class, IProjection<TContext>
+    public void RegisterProjection<T>() where T : class, IProjection
     {
-        _services.AddScoped<IProjection<TContext>, T>();
+        _services.AddScoped<IProjection, T>();
     }
 
     public EventStoreSchemaRegistry EventStoreSchemaRegistry => _eventStoreSchemaRegistry;

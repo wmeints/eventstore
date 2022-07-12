@@ -2,11 +2,11 @@
 
 namespace Nucleus.Tests.Support;
 
-public class MyProjection: IProjection<MyDbContext>
+public class MyProjection: IProjection
 {
     public int Invocations { get; set; }
     
-    public Task Project(IProjectionContext<MyDbContext> context)
+    public Task Project(object @event)
     {
         Invocations++;
 

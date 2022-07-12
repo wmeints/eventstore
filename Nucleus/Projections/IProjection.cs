@@ -1,11 +1,6 @@
 ﻿namespace Nucleus.Projections;
 
-public interface IProjection<TContext>
+public interface IProjection
 {
-    Task Project(IProjectionContext<TContext> context);
-}
-
-public interface IProjectionContext<TContext>
-{
-    
+    Task Project(object @event);
 }

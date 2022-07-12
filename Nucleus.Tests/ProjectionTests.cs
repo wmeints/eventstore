@@ -29,7 +29,7 @@ public class ProjectionTests
         await using var scope = _serviceProvider.CreateAsyncScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<MyDbContext>();
 
-        var projection = (MyProjection)scope.ServiceProvider.GetRequiredService<IProjection<MyDbContext>>();
+        var projection = (MyProjection)scope.ServiceProvider.GetRequiredService<IProjection>();
         var eventStore = scope.ServiceProvider.GetRequiredService<IEventStore>();
 
         eventStore.CreateStream(Guid.NewGuid(), new[] { new MyOtherEvent() });
