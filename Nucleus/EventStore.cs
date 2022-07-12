@@ -31,7 +31,7 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
 
         if (eventRecords.Count == 0)
         {
-            return default(TAggregate);
+            return default;
         }
 
         var events = (IEnumerable<object>)eventRecords.Select(x => x.Deserialize(_eventRegistry)).ToList();
