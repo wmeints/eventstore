@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 
-namespace Nucleus.StoreOperations;
+namespace Nucleus;
 
 internal class AppendEventsOperation<TContext> : EventStoreOperation<TContext> where TContext : DbContext
 {

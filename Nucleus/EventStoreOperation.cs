@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Nucleus.StoreOperations;
+namespace Nucleus;
 
 internal abstract class EventStoreOperation<TContext> where TContext : DbContext
 {

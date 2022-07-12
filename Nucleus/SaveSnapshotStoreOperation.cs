@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 
-namespace Nucleus.StoreOperations;
+namespace Nucleus;
 
 internal class SaveSnapshotStoreOperation<TContext>: EventStoreOperation<TContext> where TContext : DbContext
 {
