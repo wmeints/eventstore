@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FizzyLogic.EventStore</RootNamespace>
+    <PackageReadmeFile>../README.md</PackageReadmeFile>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <PackageId>FizzyLogic.EventStore</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Willem Meints</Authors>
+    <Company>Info Support</Company>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
