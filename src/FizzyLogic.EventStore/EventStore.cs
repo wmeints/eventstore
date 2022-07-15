@@ -84,7 +84,7 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
 
     public async Task<int> SaveChangesAsync()
     {
-        using var transactionScope = new TransactionScope();
+        using var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var trackedEvents = new List<object>();
         var operationContext = new EventStoreOperationContext<TContext>(_eventStoreSchemaRegistry, _dbContext);
