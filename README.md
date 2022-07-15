@@ -1,5 +1,7 @@
 # FizzyLogic.EventStore
 
+[![Continuous integration](https://github.com/wmeints/eventstore/actions/workflows/ci.yml/badge.svg)](https://github.com/wmeints/eventstore/actions/workflows/ci.yml)
+
 FizzyLogic.EventStore is a .NET library for building event-sourced applications
 with as little ceremony as possible. You can use Nucleus with an existing
 relational database. You can even combine event-sourcing with regular SQL
