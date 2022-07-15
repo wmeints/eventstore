@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FizzyLogic.EventStore", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FizzyLogic.EventStore.Tests", "src\FizzyLogic.EventStore.Tests\FizzyLogic.EventStore.Tests.csproj", "{4A68B98E-7B32-4BB2-84EC-136F0EF2ED70}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{A54AF33B-CF47-461A-8430-9FADA2F2DB02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FizzyLogic.EventStore.SampleApp", "sample\FizzyLogic.EventStore.SampleApp\FizzyLogic.EventStore.SampleApp.csproj", "{E298B26A-B0A2-4F5B-B89B-6F542434942D}"
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,9 +50,22 @@ Global
 		{4A68B98E-7B32-4BB2-84EC-136F0EF2ED70}.Release|x64.Build.0 = Release|Any CPU
 		{4A68B98E-7B32-4BB2-84EC-136F0EF2ED70}.Release|x86.ActiveCfg = Release|Any CPU
 		{4A68B98E-7B32-4BB2-84EC-136F0EF2ED70}.Release|x86.Build.0 = Release|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Debug|x64.Build.0 = Debug|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Debug|x86.Build.0 = Debug|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Release|x64.ActiveCfg = Release|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Release|x64.Build.0 = Release|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Release|x86.ActiveCfg = Release|Any CPU
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A2E27A40-94CB-46F7-9075-3415718D7A2D} = {90173E27-509D-493E-A23C-52CDACB24226}
 		{4A68B98E-7B32-4BB2-84EC-136F0EF2ED70} = {90173E27-509D-493E-A23C-52CDACB24226}
+		{E298B26A-B0A2-4F5B-B89B-6F542434942D} = {A54AF33B-CF47-461A-8430-9FADA2F2DB02}
 	EndGlobalSection
 EndGlobal
