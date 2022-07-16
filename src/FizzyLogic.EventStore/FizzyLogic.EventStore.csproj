@@ -14,7 +14,7 @@
   
   <PropertyGroup>
     <PackageId>FizzyLogic.EventStore</PackageId>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>Willem Meints</Authors>
     <Company>Info Support</Company>
   </PropertyGroup>
