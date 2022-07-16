@@ -24,6 +24,16 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
 
         var startFromVersion = -1L;
 
+        var isTombStoned = await _dbContext.Set<EventRecord>()
+            .AnyAsync(x => x.AggregateId == id.ToString() && x.EventType == "Tombstone");
+
+        // Tomb stoned streams aren't available and we shouldn't return them when asked for an aggregate.
+        
+        if (isTombStoned)
+        {
+            return default;
+        }
+        
         var snapshotRecord = await _dbContext.Set<SnapshotRecord>()
             .Where(x => x.AggregateId == id.ToString())
             .OrderByDescending(x => x.Sequence)
@@ -80,6 +90,13 @@ public class EventStore<TContext> : IEventStore where TContext : DbContext
         ArgumentNullException.ThrowIfNull(snapshot);
 
         _operations.Add(new SaveSnapshotStoreOperation<TContext>(id.ToString()!, version, snapshot));
+    }
+
+    public void Delete<TIdentity>(TIdentity id, long version)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+        
+        _operations.Add(new AppendEventsOperation<TContext>(id.ToString()!, version, new [] { Tombstone.Instance }));
     }
 
     public async Task<int> SaveChangesAsync()

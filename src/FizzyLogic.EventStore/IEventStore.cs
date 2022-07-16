@@ -6,5 +6,6 @@ public interface IEventStore
     void CreateStream<TIdentity>(TIdentity id, IEnumerable<object> events);
     void AppendToStream<TIdentity>(TIdentity id, long expectedVersion, IEnumerable<object> events);
     void SaveSnapshot<TIdentity, TSnapshot>(TIdentity id, long version, TSnapshot snapshot);
+    void Delete<TIdentity>(TIdentity id);
     Task<int> SaveChangesAsync();
 }

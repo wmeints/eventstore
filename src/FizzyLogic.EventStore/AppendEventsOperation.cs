@@ -20,6 +20,15 @@ internal class AppendEventsOperation<TContext> : EventStoreOperation<TContext> w
 
     public override async Task ExecuteAsync(EventStoreOperationContext<TContext> context)
     {
+        var isTombStoned = await context.Events.AnyAsync(
+            x => x.AggregateId == _aggregateId && x.EventType == "Tombstone");
+        
+        if (isTombStoned)
+        {
+            throw new InvalidOperationException(
+                "Can't append events to tomb stoned event streams.");
+        }
+        
         var currentVersion = AggregateVersionCache.Get(_aggregateId);
 
         if (await context.Events.AnyAsync(e => e.AggregateId == _aggregateId))

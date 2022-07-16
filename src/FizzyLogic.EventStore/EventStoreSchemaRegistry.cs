@@ -5,6 +5,11 @@ public class EventStoreSchemaRegistry
     private readonly Dictionary<string, Type> _schemaToType = new();
     private readonly Dictionary<Type, string> _typeToSchema = new();
 
+    public EventStoreSchemaRegistry()
+    {
+        Register(typeof(Tombstone), "Tombstone");
+    }
+    
     public void Register(Type type)
     {
         var schemaName = type.FullName!;
